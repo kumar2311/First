@@ -1,0 +1,71 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+struct node{
+    int data;
+    struct node*left;
+    struct node*right;
+};
+
+struct node* createNode(int data){
+    struct node*temp=(struct node*)malloc(sizeof(struct node));
+    temp->data=data;
+    temp->left=temp->right=NULL;
+    return temp;
+}
+
+int preorder_count=0;
+struct node*buildTree(int inorder[],int preorder[],int start,int end){
+    if(start>end)return NULL;
+
+    struct node*ptr=createNode(preorder[preorder_count++]);
+
+    if(start==end){
+        return ptr;
+    }
+
+    int inorder_count;
+    for(int i=start;i<=end;i++){
+        if(ptr->data==inorder[i])inorder_count=i;
+    }
+
+    ptr->left=buildTree(inorder,preorder,start,inorder_count-1);
+    ptr->right=buildTree(inorder,preorder,inorder_count+1,end);
+
+    return ptr;
+}
+
+void postOrder(struct node*head){
+    if(head!=NULL){
+        postOrder(head->left);
+        postOrder(head->right);
+        printf("%d ",head->data);
+    }
+}
+
+int main(){
+    int n;
+    printf("Enter number of nodes:");
+    scanf("%d",&n);
+    int preorder[n];
+    int inorder[n];
+    int i;
+    printf("Enter preorder:\n");
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&preorder[i]);
+    }
+    printf("Enter inorder:\n");
+    for(i=0;i<n;i++)
+    {
+        scanf("%d",&inorder[i]);
+    }
+    int length=sizeof(preorder)/sizeof(preorder[0]);
+
+    struct node*head=buildTree(inorder,preorder,0,length-1);
+
+    printf("Postorder Traversal : \n");
+    postOrder(head);
+    printf("\n");
+return 0;
+}
