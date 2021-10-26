@@ -1,0 +1,436 @@
+/Project on Product Management System.
+#include<fstream.h>
+#include<conio.h>
+#include<iomanip.h>
+#include<string.h>
+#include<stdio.h>
+
+//Function Prototyping
+void login();		//Function to authenticate the user id & password
+void projectMenu();	//Function to display main menu of the Project
+void addProduct();	//Function to add product data to file.
+void displayAll();	//Function to display all products data from file.
+void searchMenu();	//Function to provide various options of search
+void searchByID();	//Function to search product by ID
+void searchByName();	//Function to search product by Name
+void searchByCategory();//Function to search products by Category
+void searchByPrice();	//Function to search products by Price Range
+void delProduct();	//Function to delete the record in the file
+void modProduct();	//Function to modify | update the record in the file
+void viewTrash();	//Function to view Deleted items from the file.
+
+class Product
+{
+	int pid;
+	char pname[20];
+	char category[20];
+	int qty;
+	float rate;
+	float amount;
+
+	public:
+	void Header();		//Heading for displaying products.
+	void getProduct();	//Taking input for products
+	void showProduct();	//Display 1 product at a time.
+	void showAll();		//Displays all products
+	float getAmount()	//Function to return Amount of Product
+	{ return amount; }
+	int getID()   		//Function to return ID of Product
+	{ return pid; }
+	char *getName()		//Function to return Name of Product
+	{ return pname; }
+	char *getCategory()	//Function to return Name of Category
+	{ return category; }
+	int getRate()   	//Function to return Rate of Product
+	{ return rate; }
+}p;
+
+void Product::getProduct()
+{
+	cout<<"Enter Product Details:\n";
+	cout<<"=============================\n";
+	cout<<"Enter Product ID.      : ";
+	cin>>pid;
+	cin.ignore();
+	cout<<"Enter Product Name     : ";
+	cin.getline(pname,20);
+	cout<<"Enter Product Category : ";
+	cin.getline(category,20);
+	cout<<"Enter Product Qty.     : ";
+	cin>>qty;
+	cout<<"Enter Product Rate     : ";
+	cin>>rate;
+	amount=qty*rate;
+}
+
+void Product::Header()
+{
+	cout.setf(ios::left);
+	cout<<setw(6)<<"P.Id."<<setw(20)<<"Pro. Name"<<setw(20)<<"Category"
+	    <<setw(8)<<"Qty."<<setw(8)<<"Rate"<<setw(10)<<"Amount"<<endl;
+	for(int i=1;i<80;i++)
+		cout<<"=";
+	cout<<endl;
+}
+
+void Product::showProduct()
+{
+	cout<<"Product Details:\n";
+	cout<<"=============================\n";
+	cout<<"ID.      : "<<pid<<endl;
+	cout<<"Name     : "<<pname<<endl;
+	cout<<"Category : "<<category<<endl;
+	cout<<"Qty.     : "<<qty<<endl;
+	cout<<"Rate     : "<<rate<<endl;
+	cout<<"Amount   : "<<amount<<endl;
+	cout<<"=============================\n";
+}
+
+void Product::showAll()
+{
+	cout.setf(ios::left);
+	cout<<setw(6)<<pid<<setw(20)<<pname<<setw(20)<<category
+	    <<setw(8)<<qty<<setw(8)<<rate<<setw(10)<<amount<<endl;
+}
+
+void projectMenu()
+{
+	int ch;
+	do
+	{
+		clrscr();
+		cout<<"\tPRODUCT MANAGEMENT SYSTEM\n";
+		cout<<"===================================================\n";
+		cout<<"0. Exit\n";
+		cout<<"1. Add New Product\n";
+		cout<<"2. Display All Products\n";
+		cout<<"3. Search Options\n";
+		cout<<"4. Delete Product\n";
+		cout<<"5. Modify Product\n";
+		cout<<"6. View Deleted Items\n";
+		cout<<"Enter your choice : ";
+		cin>>ch;
+		clrscr();
+		switch(ch)
+		{
+			case 1: addProduct(); getch();	break;
+			case 2: displayAll(); getch();	break;
+			case 3: searchMenu(); 		break;
+			case 4: delProduct(); getch();	break;
+			case 5: modProduct(); getch();	break;
+			case 6: viewTrash();  getch();	break;
+		}
+	}while(ch!=0);
+}
+
+//Function to add product data to file.
+void addProduct()
+{
+	ofstream fout("products.bin",ios::binary|ios::out|ios::app);
+	p.getProduct();
+	fout.write((char*)&p,sizeof(p));
+	fout.close();
+	cout<<"\nThe Product Added to file Successfully.....\n";
+}
+
+//Function to display all products data from file.
+void displayAll()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	float total=0;
+	int rec=0;
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		total+=p.getAmount();
+		rec++;
+		if(rec<=1)
+			p.Header();
+		p.showAll();
+	}
+	cout<<endl;
+	cout.setf(ios::right);
+	cout<<setw(62)<<"Total Amount:  ";
+	cout.setf(ios::left);
+	cout<<setw(8)<<total<<endl;
+	fin.close();
+	cout<<"\nFile reading has been completed....\n";
+}
+
+void searchMenu()
+{
+	int ch;
+	do
+	{
+		clrscr();
+		cout<<"\tSEARCH OPTIONS\n";
+		cout<<"========================================\n";
+		cout<<"0. Back to Main Menu\n";
+		cout<<"1. Search by ID\n";
+		cout<<"2. Search by Name\n";
+		cout<<"3. Search by Category\n";
+		cout<<"4. Search by Price Range\n";
+		cout<<"Enter your choice : ";
+		cin>>ch;
+		switch(ch)
+		{
+			case 1: searchByID(); 		break;
+			case 2: searchByName();		break;
+			case 3: searchByCategory(); 	break;
+			case 4: searchByPrice();	break;
+		}
+		getch();
+	}while(ch!=0);
+}
+
+//Function to search product by ID
+void searchByID()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	int flag=0, id;
+
+	cout<<endl;
+	cout<<"Enter the Product ID you to want to search: ";
+	cin>>id;
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		if(id==p.getID())
+		{
+			p.showProduct();
+			flag++;
+		}
+	}
+	fin.close();
+
+	if(flag==0)
+		cout<<"The Product iD: "<<id<<" not in records....\n";
+
+	cout<<"\nFile reading has been completed....\n";
+}
+
+//Function to search product by Name
+void searchByName()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	int flag=0;
+	char name[20];
+
+	cout<<endl;
+	cout<<"Enter the Product Name you to want to search: ";
+	cin.ignore();
+	cin.getline(name,20);
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		if(strcmpi(name,p.getName())==0)
+		{
+			p.showProduct();
+			flag++;
+		}
+	}
+	fin.close();
+
+	if(flag==0)
+		cout<<"The Product Name: "<<name<<" not in records....\n";
+
+	cout<<"\nFile reading has been completed....\n";
+}
+
+//Function to search product by Category
+void searchByCategory()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	int flag=0;
+	char cat[20];
+
+	cout<<endl;
+	cout<<"Enter the Product Category you to want to search: ";
+	cin.ignore();
+	cin.getline(cat,20);
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		if(strcmpi(cat,p.getCategory())==0)
+		{
+			flag++;
+			if(flag<=1)
+				p.Header();
+			p.showAll();
+		}
+	}
+	fin.close();
+
+	if(flag==0)
+		cout<<"The Product Category: "<<cat<<" not in records....\n";
+
+	cout<<"\nFile reading has been completed....\n";
+}
+
+//Function to search products by Price Range
+void searchByPrice()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	int flag=0, minprice, maxprice;
+
+	cout<<endl;
+	cout<<"Enter the Product Minimum Price: ";
+	cin>>minprice;
+	cout<<"Enter the Product Maximum Price: ";
+	cin>>maxprice;
+
+	cout<<"The Products Between the Price Range "
+	    <<minprice<<" and "<<maxprice<<endl;
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		if(p.getRate()>=minprice && p.getRate()<=maxprice)
+		{
+			flag++;
+			if(flag<=1)
+				p.Header();
+			p.showAll();
+		}
+	}
+	fin.close();
+
+	if(flag==0)
+	cout<<"There is no product between the price range "
+	    <<minprice<<" and "<<maxprice<<"in the records\n";
+
+	cout<<"\nFile reading has been completed....\n";
+
+}
+
+//Function to delete the record in the file
+void delProduct()
+{
+	ifstream fin("products.bin",ios::binary|ios::in);
+	ofstream fout("temp.bin",ios::binary|ios::out);
+	ofstream out("trash.bin",ios::binary|ios::out|ios::app);
+	int flag=0, id;
+
+	cout<<endl;
+	cout<<"Enter the Product ID you to want to delete: ";
+	cin>>id;
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		if(id==p.getID())
+		{
+			cout<<"The following product has been deleted....\n";
+			out.write((char*)&p,sizeof(p));
+			p.showProduct();
+			flag++;
+		}
+		else
+		{
+			fout.write((char*)&p,sizeof(p));
+		}
+	}
+	fin.close();
+	fout.close();
+	out.close();
+
+	if(flag==0)
+		cout<<"The Product iD: "<<id<<" not in records....\n";
+
+	cout<<"\nFile reading has been completed....\n";
+	remove("products.bin");
+	rename("temp.bin","products.bin");
+}
+
+//Function to modify | update the record in the file
+void modProduct()
+{
+	fstream fin("products.bin",ios::binary|ios::in|ios::out);
+	int flag=0, id, pos;
+
+	cout<<endl;
+	cout<<"Enter the Product ID you to want to modify: ";
+	cin>>id;
+
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		pos=fin.tellg();
+		if(id==p.getID())
+		{
+			cout<<"The Following record will be modified...\n";
+			p.showProduct();
+
+			cout<<"\nEnter the New Details....\n";
+			p.getProduct();
+			fin.seekg(pos-sizeof(p));
+			fin.write((char*)&p,sizeof(p));
+			flag++;
+			cout<<"\nRecord Modified Successfully....\n";
+		}
+	}
+	fin.close();
+
+	if(flag==0)
+		cout<<"The Product iD: "<<id<<" not in records....\n";
+
+	cout<<"\nFile reading has been completed....\n";
+
+}
+
+//Function to display deleted items.
+void viewTrash()
+{
+	ifstream fin("trash.bin",ios::binary|ios::in);
+	int rec=0;
+	while(fin.read((char*)&p,sizeof(p)))
+	{
+		rec++;
+		if(rec<=1)
+			p.Header();
+		p.showAll();
+	}
+	fin.close();
+	cout<<"\nFile reading has been completed....\n";
+}
+
+void login()
+{
+	char uname[20], pwd[20], ch;
+	int i=0;
+	cout<<"Enter Username: ";
+	cin>>uname;
+	if(strcmpi(uname,"admin")==0)
+	{
+		cout<<"Enter Password: ";
+		do
+		{
+			ch=getch();
+			if(ch!=13)
+			{
+				pwd[i]=ch;
+				cout<<"*";
+				i++;
+			}
+			else
+			{
+				pwd[i]='\0';
+			}
+		}while(ch!=13);
+
+		if(strcmp(pwd,"admin")==0)
+		{
+			cout<<"\nWelcome Admin....\n";
+			getch();
+			//Runs the Project if credentials are correct.
+			projectMenu();
+		}
+	}
+	else
+	{
+		cout<<"\nUnauthorized User....\n";
+	}
+}
+
+void main()
+{
+	clrscr();
+	login();
+  cout<<"Thanks for sharing the code.";
+}
